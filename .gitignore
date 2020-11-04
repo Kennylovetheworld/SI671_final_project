@@ -1,0 +1,7 @@
+*.zip
+*.csv
+*.pdf
+*.DS_Store
+.vscode*
+*.pickle
+__pycache__/*
