@@ -122,7 +122,7 @@ class Retrival_Interface():
         output.set_index('appid', inplace = True)
         output.sort_values(by=['rank'], inplace = True)
         
-        
+        output = output.iloc[:amount].copy()
         if score_mode == True:
             output = output[['name', 'rank']]
             # pdb.set_trace()
