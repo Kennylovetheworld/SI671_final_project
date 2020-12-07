@@ -28,6 +28,7 @@ class Retrival_Interface():
         self.PseudoFB_round = 2
         self.query_correction_flag = False
         self.final_query = None
+        self.PFB_panalize_option = False
 
     def Base_Retrieve_List(self):
         BM25_list = self.Rb.BM25_retrieval_score(self.query, self.base_retrieve_number, True)
@@ -65,18 +66,19 @@ class Retrival_Interface():
                     idx = self.retrieved_game_list.index(item[0])
                     self.base_retrieve_list[idx] = (self.base_retrieve_list[idx][0], \
                         self.base_retrieve_list[idx][1] + self.PseudoFB_weight * 2/np.log2(i + 2))
-        for PFB_i in range(self.PseudoFB_number):
-            appid = self.Rb.games[(self.Rb.games.name == self.retrieved_game_list[-PFB_i])]['appid'].values[0]
-            game_name = self.retrieved_game_list[-PFB_i]
-            index = -PFB_i
-            # pdb.set_trace()
-            description_text = self.Rb.games[(self.Rb.games.appid == appid)]['description_text'].values[0]
-            PseudoFB_list = self.Rb.BM25_retrieval_score(description_text, self.base_retrieve_number, False)
-            for i, item in enumerate(PseudoFB_list):
-                if item[0] in self.retrieved_game_list and item[0] != game_name:
-                    idx = self.retrieved_game_list.index(item[0])
-                    self.base_retrieve_list[idx] = (self.base_retrieve_list[idx][0], \
-                        self.base_retrieve_list[idx][1] - self.PseudoFB_weight * 2/np.log2(i + 2))
+        if self.PFB_panalize_option == True:
+            for PFB_i in range(self.PseudoFB_number):
+                appid = self.Rb.games[(self.Rb.games.name == self.retrieved_game_list[-PFB_i])]['appid'].values[0]
+                game_name = self.retrieved_game_list[-PFB_i]
+                index = -PFB_i
+                # pdb.set_trace()
+                description_text = self.Rb.games[(self.Rb.games.appid == appid)]['description_text'].values[0]
+                PseudoFB_list = self.Rb.BM25_retrieval_score(description_text, self.base_retrieve_number, False)
+                for i, item in enumerate(PseudoFB_list):
+                    if item[0] in self.retrieved_game_list and item[0] != game_name:
+                        idx = self.retrieved_game_list.index(item[0])
+                        self.base_retrieve_list[idx] = (self.base_retrieve_list[idx][0], \
+                            self.base_retrieve_list[idx][1] - self.PseudoFB_weight * 2/np.log2(i + 2))
         self.base_retrieve_list.sort(key=lambda tup: -tup[1])
         self.retrieved_game_list = [item[0] for item in self.base_retrieve_list]
         return self.base_retrieve_list  
@@ -113,12 +115,18 @@ class Retrival_Interface():
         suggestion_list = [self.final_query + ' ' + key for key in key_list if key not in keyword_list]
         return suggestion_list
 
-    def retrieve_detail_info(self, amount):
+    def retrieve_detail_info(self, amount, score_mode = False):
         output = self.Rb.games[(self.Rb.games.name.isin(self.retrieved_game_list[:amount]))]
         output.drop(['detailed_description', 'about_the_game','short_description', 'steamspy_tags'], axis = 1, inplace = True)
         output['rank'] = output['name'].apply(lambda x: self.retrieved_game_list.index(x))
         output.set_index('appid', inplace = True)
         output.sort_values(by=['rank'], inplace = True)
+        
+        
+        if score_mode == True:
+            output = output[['name', 'rank']]
+            # pdb.set_trace()
+            output['score'] = [item[1] for item in self.base_retrieve_list][:amount]
         return output
         
 def main():
@@ -150,7 +158,7 @@ def main():
     #     if i == 20:
     #         break
 
-    out_df = Ri.retrieve_detail_info(50)
+    out_df = Ri.retrieve_detail_info(100, score_mode=True)
     print(out_df)
     print(suggestion_list)
 
