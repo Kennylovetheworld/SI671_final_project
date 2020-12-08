@@ -5,7 +5,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
 from rake_nltk import Rake
 
-nltk.download('punkt')
+# nltk.download('punkt')
 
 df_item = pd.read_csv('user_game/game_property.csv')
 game_df = pd.read_excel("steam_clean.xlsx",index_col=0)
@@ -43,26 +43,25 @@ def gid_to_fake_query(gid):
     return fake_query
 
 
-users = random.sample(list(user_game_df['uid'].unique()), 100)
-for uid in users:
+# users = random.sample(list(user_game_df['uid'].unique()), 100)
+# for uid in users:
     
-    last_gid = find_last_game(uid)
-    fake_query =gid_to_fake_query(last_gid)
-    print(fake_query)
-    gname = gid_to_name(last_gid)
-    retrieved_games = userBasedRetrieval(uid, fake_query)
+#     last_gid = find_last_game(uid)
+#     fake_query =gid_to_fake_query(last_gid)
+#     print(fake_query)
+#     gname = gid_to_name(last_gid)
+#     retrieved_games = userBasedRetrieval(uid, fake_query)
 
-    try:
-        original_rank = retrieved_games.loc[last_gid]['original_rank']
-    except:
-        original_rank = -1
-    try: 
-        new_rank = retrieved_games.loc[last_gid]['new_rank']
-    except:
-        new_rank = -1
-    print(original_rank)
-    print(new_rank)
-    if original_rank > new_rank:
-        pdb.set_trace()
-        # retrieved_games[['name', 'score', 'new_score', 'original_rank', 'new_rank']].sort_values('new_rank')
-
+#     try:
+#         original_rank = retrieved_games.loc[last_gid]['original_rank']
+#     except:
+#         original_rank = -1
+#     try: 
+#         new_rank = retrieved_games.loc[last_gid]['new_rank']
+#     except:
+#         new_rank = -1
+#     print(original_rank)
+#     print(new_rank)
+#     if original_rank > new_rank:
+#         pdb.set_trace()
+#         # retrieved_games[['name', 'score', 'new_score', 'original_rank', 'new_rank']].sort_values('new_rank')
